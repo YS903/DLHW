@@ -1,10 +1,10 @@
+```html
 <!DOCTYPE html>
 <html>
 
 <head>
-    <title>English App</title>
+    <title>My First English Learning App</title>
 
-    <!-- CSS: Change how the app looks -->
     <style>
         body {
             font-family: Arial;
@@ -23,41 +23,37 @@
 
 <body>
 
-    <!-- HTML: Change what learners see -->
-
     <h1>Vocabulary Quiz</h1>
 
     <p>What does "associated with" mean?</p>
 
-    <button onclick="checkAnswer('related to')">
+    <button onclick="checkAnswer('related')">
         Related to
     </button>
 
-    <button onclick="checkAnswer('run')">
-        Run
+    <button onclick="checkAnswer('avoid')">
+        Avoid
     </button>
 
-    <button onclick="checkAnswer('eat')">
-        Eat
+    <button onclick="checkAnswer('watch')">
+        Watch
     </button>
 
     <h3 id="feedback"></h3>
 
 
-    <!-- JavaScript: Change what happens -->
-
     <script>
 
         function checkAnswer(answer) {
 
-            if (answer === "related to") {
+            if (answer === "related") {
                 document.getElementById("feedback").innerText =
                     "Correct! Well done!";
             }
 
             else {
                 document.getElementById("feedback").innerText =
-                    "Incorrect. The answer is Participate in.";
+                    "Incorrect. The answer is Related to.";
             }
 
         }
@@ -66,3 +62,4 @@
 
 </body>
 </html>
+```
