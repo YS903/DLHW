@@ -2,64 +2,324 @@
 <html>
 
 <head>
-    <title>English App</title>
+    <title>Korean to English Pronunciation App</title>
 
-    <!-- CSS: Change how the app looks -->
     <style>
         body {
             font-family: Arial;
             text-align: center;
-            margin: 50px;
+            margin: 40px;
+        }
+
+        h1 {
+            font-size: 28px;
+        }
+
+        p {
+            font-size: 18px;
+        }
+
+        textarea {
+            width: 80%;
+            height: 120px;
+            font-size: 16px;
+            padding: 10px;
+            margin: 15px;
+            resize: none;
         }
 
         button {
-            font-size: 20px;
-            padding: 12px;
+            font-size: 16px;
+            padding: 10px 18px;
             margin: 5px;
-            background-color: lightgreen;
+            background-color: yellow;
+            border: 1px solid #999;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #ffd900;
+        }
+
+        #translation {
+            font-size: 20px;
+            margin: 25px;
+        }
+
+        #message {
+            font-size: 16px;
+            margin: 15px;
         }
     </style>
 </head>
 
+
 <body>
 
-    <!-- HTML: Change what learners see -->
+    <h1>Korean → English Pronunciation</h1>
 
-    <h1>Vocabulary Quiz</h1>
+    <p>한국어 문장을 입력하세요.</p>
 
-    <p>What does "associated with" mean?</p>
+    <textarea id="koreanText"
+        placeholder="예: 나는 도서관에 가고 싶어요."></textarea>
 
-    <button onclick="checkAnswer('related')">
-        Related to
+    <br>
+
+    <button onclick="translateText()">
+        Translate
     </button>
 
-    <button onclick="checkAnswer('participate')">
-        Participate in
+
+    <div id="translation">
+        English translation will appear here.
+    </div>
+
+
+    <hr>
+
+
+    <h3>Choose an Accent</h3>
+
+    <button onclick="setAmerican()">
+        🇺🇸 American
     </button>
 
-    <button onclick="checkAnswer('watch')">
-        Watch
+    <button onclick="setBritish()">
+        🇬🇧 British
     </button>
 
-    <h3 id="feedback"></h3>
 
-    <!-- JavaScript: Change what happens -->
+    <br><br>
+
+
+    <h3>Audio Controls</h3>
+
+    <button onclick="playAudio()">
+        ▶ Play
+    </button>
+
+    <button onclick="pauseAudio()">
+        ⏸ Pause
+    </button>
+
+    <button onclick="stopAudio()">
+        ⏹ Stop
+    </button>
+
+
+    <p id="message"></p>
+
 
     <script>
 
-        function checkAnswer(answer) {
+        // 현재 영어 문장
+        let englishText = "";
 
-            if (answer === "related") {
-                document.getElementById("feedback").innerText = "베리굿";
+        // 현재 선택된 발음
+        let selectedAccent = "american";
+
+        // 음성 목록
+        let voices = [];
+
+
+        // 음성 목록 불러오기
+        function loadVoices() {
+            voices = speechSynthesis.getVoices();
+        }
+
+        loadVoices();
+
+        speechSynthesis.onvoiceschanged = loadVoices;
+
+
+        // 한국어 → 영어 번역
+        async function translateText() {
+
+            const koreanText =
+                document.getElementById("koreanText").value;
+
+            if (koreanText.trim() === "") {
+
+                document.getElementById("message").innerText =
+                    "한국어 문장을 입력해주세요.";
+
+                return;
             }
+
+
+            document.getElementById("message").innerText =
+                "번역 중...";
+
+
+            try {
+
+                const url =
+                    "https://api.mymemory.translated.net/get?q="
+                    + encodeURIComponent(koreanText)
+                    + "&langpair=ko|en";
+
+
+                const response = await fetch(url);
+
+                const data = await response.json();
+
+
+                englishText =
+                    data.responseData.translatedText;
+
+
+                document.getElementById("translation").innerText =
+                    englishText;
+
+
+                document.getElementById("message").innerText =
+                    "번역 완료! 발음을 선택하세요.";
+
+
+            } catch (error) {
+
+                document.getElementById("message").innerText =
+                    "번역에 실패했습니다. 인터넷 연결을 확인해주세요.";
+
+            }
+
+        }
+
+
+        // American English 선택
+        function setAmerican() {
+
+            selectedAccent = "american";
+
+            document.getElementById("message").innerText =
+                "American English selected.";
+
+        }
+
+
+        // British English 선택
+        function setBritish() {
+
+            selectedAccent = "british";
+
+            document.getElementById("message").innerText =
+                "British English selected.";
+
+        }
+
+
+        // 음성 재생
+        function playAudio() {
+
+            if (englishText.trim() === "") {
+
+                document.getElementById("message").innerText =
+                    "먼저 한국어 문장을 번역해주세요.";
+
+                return;
+            }
+
+
+            // 일시정지된 음성이 있다면 이어서 재생
+            if (speechSynthesis.paused) {
+
+                speechSynthesis.resume();
+
+                return;
+            }
+
+
+            speechSynthesis.cancel();
+
+
+            const speech =
+                new SpeechSynthesisUtterance(englishText);
+
+
+            // American / British 선택
+            if (selectedAccent === "american") {
+
+                speech.lang = "en-US";
+
+                speech.rate = 0.9;
+
+                const americanVoice =
+                    voices.find(function(voice) {
+
+                        return voice.lang === "en-US";
+
+                    });
+
+
+                if (americanVoice) {
+                    speech.voice = americanVoice;
+                }
+
+
+                document.getElementById("message").innerText =
+                    "🇺🇸 Playing American English...";
+
+            }
+
 
             else {
-                document.getElementById("feedback").innerText = "다시 생각해";
+
+                speech.lang = "en-GB";
+
+                speech.rate = 0.9;
+
+                const britishVoice =
+                    voices.find(function(voice) {
+
+                        return voice.lang === "en-GB";
+
+                    });
+
+
+                if (britishVoice) {
+                    speech.voice = britishVoice;
+                }
+
+
+                document.getElementById("message").innerText =
+                    "🇬🇧 Playing British English...";
+
             }
+
+
+            speechSynthesis.speak(speech);
+
+        }
+
+
+        // 일시정지
+        function pauseAudio() {
+
+            if (speechSynthesis.speaking) {
+
+                speechSynthesis.pause();
+
+                document.getElementById("message").innerText =
+                    "Audio paused.";
+
+            }
+
+        }
+
+
+        // 정지
+        function stopAudio() {
+
+            speechSynthesis.cancel();
+
+            document.getElementById("message").innerText =
+                "Audio stopped.";
 
         }
 
     </script>
 
 </body>
+
 </html>
